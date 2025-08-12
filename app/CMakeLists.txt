@@ -1,0 +1,5 @@
+add_executable(host_demo app_main.c)
+target_link_libraries(host_demo PRIVATE logging camera radio_subghz ethernet)
+if(PLATFORM STREQUAL "host")
+  target_link_libraries(host_demo PRIVATE pal_host osal_host)
+endif()
