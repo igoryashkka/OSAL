@@ -1,0 +1,14 @@
+#pragma once
+/* Default board mapping: BluePill (STM32F103C8T6): LED on PC13 */
+#define LED_GPIO_PORT GPIOC
+#define LED_GPIO_CLK_ENABLE() __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED_PIN GPIO_PIN_13
+
+/* Default UART: USART1 on PA9 (TX), PA10 (RX) */
+#define UARTx USART1
+#define UARTx_CLK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
+#define UARTx_GPIO_PORT GPIOA
+#define UARTx_GPIO_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
+#define UARTx_TX_PIN GPIO_PIN_9
+#define UARTx_RX_PIN GPIO_PIN_10
+#define UARTx_AF GPIO_AF1_USART1

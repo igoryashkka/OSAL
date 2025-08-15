@@ -1,0 +1,10 @@
+build/
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.obj
+*.lst
+*.d
+.DS_Store
