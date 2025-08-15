@@ -44,6 +44,14 @@ cmake -S . -B build -G "Ninja" `
 
 cmake --build build -v
 ```
+
+## Configure & build (MacOS)
+
+rm -rf build
+cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-gcc.cmake
+cmake --build build -v
+
+
 Artifacts: `build/app.elf`, `build/app.hex`, `build/app.bin`, and `build/app.map`.
 
 ## Notes
