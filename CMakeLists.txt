@@ -22,13 +22,15 @@ option(USE_FLASH "Enable FLASH" ON)
 # ---- Target ---------------------------------------------------------------
 add_executable(app
   app/main.c
-  modules/blink/blink.c
+  modules/blink/module_blink.c
+  modules/system/module_system.c
   platform/stm32/startup/gcc/startup_stm32f103xb.s
   platform/stm32/common/system_stm32f1xx.c
+  platform/stm32/common/stm32f1xx_it.c
   platform/stm32/pal/stm32f1/pal_clock_stm32f1.c
   platform/stm32/pal/stm32f1/pal_gpio_stm32f1.c
   platform/stm32/pal/stm32f1/pal_uart_stm32f1.c
-  platform/stm32/pal/stm32f1/pal_flash_stm32f1.c
+
 )
 
 target_compile_definitions(app PRIVATE
@@ -45,6 +47,8 @@ target_include_directories(app PRIVATE
   ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/CMSIS/Device/ST/STM32F1xx/Include
   ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/CMSIS/Include
   ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/STM32F1xx_HAL_Driver/Inc
+  ${CMAKE_SOURCE_DIR}/modules/blink
+  ${CMAKE_SOURCE_DIR}/modules/system
 )
 
 # ---- HAL sources (from STM32CubeF1 package) --------------------------------

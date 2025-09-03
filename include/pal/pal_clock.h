@@ -1,2 +1,7 @@
 #pragma once
-void pal_clock_init_default(void); // optional, currently not used
+
+
+//#define PAL_Init(); 
+
+void pal_clock_init_default(void); 
+
