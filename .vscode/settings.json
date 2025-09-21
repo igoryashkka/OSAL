@@ -9,9 +9,12 @@
         "stm32f1xx.h": "c",
         "stm32f1xx_hal_rcc.h": "c",
         "pal_clock.h": "c",
-        "module_system.h": "c"
+        "module_system.h": "c",
+        "stm32g0xx_hal_def.h": "c",
+        "stm32_hal_legacy.h": "c",
+        "stm32g0xx.h": "c"
     },
-    "cmake.cmakePath": "cube-cmake",
+    "cmake.cmakePath": "cmake",
     "cmake.configureArgs": [
         "-DCMAKE_COMMAND=cube-cmake"
     ],

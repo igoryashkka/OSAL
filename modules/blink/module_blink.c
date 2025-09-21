@@ -1,4 +1,4 @@
-#include "pal_gpio.h"
+#include "pal/pal_gpio.h"
 #include "module_blink.h"
 
 
@@ -9,7 +9,7 @@ void blink_init(){
 
 void blink_once(void) {
     pal_gpio_toggle_led();
-    pal_delay(5000000);
+    pal_delay(1000);
     pal_gpio_toggle_led();
-    pal_delay(5000000);
+    pal_delay(1000);
 }
