@@ -13,6 +13,7 @@ set(MCU_PART "STM32F103xB" CACHE STRING "CMSIS define for part")
 # Linker script (adjust if you use a different device)
 set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/platform/stm32/ld/stm32f103c8_flash.ld" CACHE FILEPATH "")
 
+
 option(USE_GPIO  "Enable GPIO"  ON)
 option(USE_UART  "Enable UART"  ON)
 option(USE_I2C   "Enable I2C"   OFF)
@@ -20,132 +21,109 @@ option(USE_SPI   "Enable SPI"   OFF)
 option(USE_FLASH "Enable FLASH" ON)
 
 # ---- Target ---------------------------------------------------------------
-add_executable(app
-  app/main.c
-  modules/blink/module_blink.c
-  modules/system/module_system.c
-  platform/stm32/startup/gcc/startup_stm32f103xb.s
-  platform/stm32/common/system_stm32f1xx.c
-  platform/stm32/common/stm32f1xx_it.c
-  platform/stm32/pal/stm32f1/pal_clock_stm32f1.c
-  platform/stm32/pal/stm32f1/pal_gpio_stm32f1.c
-  platform/stm32/pal/stm32f1/pal_uart_stm32f1.c
 
-)
+function(add_stm32_model_target TARGET_NAME FAMILY MODEL)
+  set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/linker/linker.ld")
 
-target_compile_definitions(app PRIVATE
-    USE_HAL_DRIVER
-    STM32F103xB
-)
+  set(HAL_DIR ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/drivers/HAL_Driver)
+  add_executable(${TARGET_NAME}
+    app/main.c
+    platform/stm32/${FAMILY}/startup/startup.s
+    modules/blink/module_blink.c
+    modules/system/module_system.c
+    platform/stm32/${FAMILY}/pal/pal_clock.c
+    platform/stm32/${FAMILY}/pal/pal_flash.c
+    platform/stm32/${FAMILY}/pal/pal_gpio.c
+    platform/stm32/${FAMILY}/pal/pal_uart.c
+    
+  )
 
-# ---- Include paths --------------------------------------------------------
-target_include_directories(app PRIVATE
+  target_compile_definitions(${TARGET_NAME} PRIVATE
+        USE_HAL_DRIVER
+        ${MCU_PART}
+        STM32_MODEL=${FAMILY}
+    )
+  
+  target_include_directories(${TARGET_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include/pal
-  ${CMAKE_SOURCE_DIR}/include/config
-  ${CMAKE_SOURCE_DIR}/platform/stm32
-  ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/CMSIS/Device/ST/STM32F1xx/Include
-  ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/CMSIS/Include
-  ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/STM32F1xx_HAL_Driver/Inc
-  ${CMAKE_SOURCE_DIR}/modules/blink
-  ${CMAKE_SOURCE_DIR}/modules/system
-)
+  ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/include
+  ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/drivers
+  ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/drivers/CMSIS/Device/ST/${FAMILY}/Include
+  ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/drivers/CMSIS/Include
+  ${CMAKE_SOURCE_DIR}/platform/stm32/${FAMILY}/drivers/HAL_Driver/Inc
+  )
 
-# ---- HAL sources (from STM32CubeF1 package) --------------------------------
-set(HAL_DIR ${CMAKE_SOURCE_DIR}/platform/stm32/STM32F1XX/Drivers/STM32F1xx_HAL_Driver)
+  if(FAMILY STREQUAL "f1xx")
+        set(CPU_FLAGS -mcpu=cortex-m3 -mthumb -mfloat-abi=soft)
+    elseif(FAMILY STREQUAL "g0xx")
+        set(CPU_FLAGS -mcpu=cortex-m0plus -mthumb -mfloat-abi=soft)
+    else()
+        message(FATAL_ERROR "Unknown STM32 FAMILY: ${FAMILY}")
+  endif()
 
-if(NOT EXISTS "${HAL_DIR}/Src")
-  message(FATAL_ERROR "
-Missing STM32CubeF1 HAL sources.
+  set(HAL_SRC
+  ${HAL_DIR}/Src/stm32${FAMILY}_hal.c
+  ${HAL_DIR}/Src/stm32${FAMILY}_hal_rcc.c
+  ${HAL_DIR}/Src/stm32${FAMILY}_hal_rcc_ex.c
+  ${HAL_DIR}/Src/stm32${FAMILY}_hal_cortex.c
+  )
 
-Please copy STM32CubeF1 Drivers into:
-  platform/stm32/STM32F1XX/Drivers/
+  if(USE_GPIO)
+  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32${FAMILY}_hal_gpio.c)
+  endif()
 
-Expected subfolders:
-  CMSIS/Include
-  CMSIS/Device/ST/STM32F1xx/Include
-  STM32F1xx_HAL_Driver/Inc
-  STM32F1xx_HAL_Driver/Src
+  if(USE_UART)
+  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32${FAMILY}_hal_uart.c)
+  endif()
 
-Then reconfigure.")
-endif()
+  if(USE_I2C)
+  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32${FAMILY}_hal_i2c.c ${HAL_DIR}/Src/stm32${FAMILY}_hal_i2c_ex.c)
+  endif()
 
-set(HAL_SRC
-  ${HAL_DIR}/Src/stm32f1xx_hal.c
-  ${HAL_DIR}/Src/stm32f1xx_hal_rcc.c
-  ${HAL_DIR}/Src/stm32f1xx_hal_rcc_ex.c
-  ${HAL_DIR}/Src/stm32f1xx_hal_cortex.c
-)
+  if(USE_SPI)
+  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32${FAMILY}_hal_spi.c ${HAL_DIR}/Src/stm32${FAMILY}_hal_spi_ex.c)
+  endif()
 
-if(USE_GPIO)
-  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32f1xx_hal_gpio.c)
-endif()
-
-if(USE_UART)
-  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32f1xx_hal_uart.c)
-endif()
-
-if(USE_I2C)
-  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32f1xx_hal_i2c.c ${HAL_DIR}/Src/stm32f1xx_hal_i2c_ex.c)
-endif()
-
-if(USE_SPI)
-  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32f1xx_hal_spi.c ${HAL_DIR}/Src/stm32f1xx_hal_spi_ex.c)
-endif()
-
-if(USE_FLASH)
-  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32f1xx_hal_flash.c ${HAL_DIR}/Src/stm32f1xx_hal_flash_ex.c)
-endif()
-
-target_sources(app PRIVATE
-  platform/stm32/STM32F1XX/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
-)
+  if(USE_FLASH)
+  list(APPEND HAL_SRC ${HAL_DIR}/Src/stm32${FAMILY}_hal_flash.c ${HAL_DIR}/Src/stm32${FAMILY}_hal_flash_ex.c)
+  endif()
+  if(NOT FAMILY STREQUAL "g0xx")
+    target_sources(${TARGET_NAME} PRIVATE
+      platform/stm32/${FAMILY}/drivers/CMSIS/Device/ST/${FAMILY}/Source/Templates/system_stm32${FAMILY}.c
+    )
+  endif()
 
 
 
-target_sources(app PRIVATE ${HAL_SRC})
+  target_sources(${TARGET_NAME} PRIVATE ${HAL_SRC})
 
-
-
-# ---- Defines --------------------------------------------------------------
-# target_compile_definitions(app PRIVATE
-#   ${MCU_PART}
-#   USE_HAL_DRIVER
-#   $<$<BOOL:${USE_GPIO}>:HAL_GPIO_MODULE_ENABLED>
-#   $<$<BOOL:${USE_UART}>:HAL_UART_MODULE_ENABLED>
-#   $<$<BOOL:${USE_I2C}>:HAL_I2C_MODULE_ENABLED>
-#   $<$<BOOL:${USE_SPI}>:HAL_SPI_MODULE_ENABLED>
-#   $<$<BOOL:${USE_FLASH}>:HAL_FLASH_MODULE_ENABLED>
-# )
-
-# ---- Flags / Linker -------------------------------------------------------
-set(CPU_FLAGS -mcpu=cortex-m3 -mthumb -mfloat-abi=soft)
-
-target_compile_options(app PRIVATE
+  
+  target_compile_options(${TARGET_NAME} PRIVATE
   ${CPU_FLAGS}
   -ffunction-sections -fdata-sections
   -Wall -Wextra -Werror=implicit-function-declaration
-)
+  ) 
 
-target_link_options(app PRIVATE
+  target_link_options(${TARGET_NAME} PRIVATE
   ${CPU_FLAGS}
   -Wl,--gc-sections
-  -Wl,-Map=${CMAKE_BINARY_DIR}/app.map
+  -Wl,-Map=${CMAKE_BINARY_DIR}/${TARGET_NAME}.map
   -T ${LINKER_SCRIPT}
   -specs=nosys.specs
   -Wl,--start-group -lc -lm -lgcc -Wl,--end-group
-)
+  )
 
-# ---- Size/HEX/BIN ---------------------------------------------------------
-if(NOT CMAKE_OBJCOPY)
-  set(CMAKE_OBJCOPY arm-none-eabi-objcopy CACHE STRING "objcopy tool")
-endif()
-if(NOT CMAKE_SIZE)
-  set(CMAKE_SIZE arm-none-eabi-size CACHE STRING "size tool")
-endif()
+  
+  find_program(OBJCOPY arm-none-eabi-objcopy)
+  find_program(SIZETOOL arm-none-eabi-size)
 
-add_custom_command(TARGET app POST_BUILD
-  COMMAND ${CMAKE_OBJCOPY} -O ihex  $<TARGET_FILE:app> app.hex
-  COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:app> app.bin
-  COMMAND ${CMAKE_SIZE} --format=berkeley $<TARGET_FILE:app>
-)
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+      COMMAND ${OBJCOPY} -O ihex  $<TARGET_FILE:${TARGET_NAME}> ${TARGET_NAME}.hex
+      COMMAND ${OBJCOPY} -O binary $<TARGET_FILE:${TARGET_NAME}> ${TARGET_NAME}.bin
+      COMMAND ${SIZETOOL} --format=berkeley $<TARGET_FILE:${TARGET_NAME}>
+  )
+
+endfunction()
+
+add_stm32_model_target(app_f1xx f1xx STM32F103xx)
+add_stm32_model_target(app_g0xx g0xx STM32G030xx)
