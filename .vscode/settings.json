@@ -1,21 +1,5 @@
 {
-    "files.associations": {
-        "pal_gpio.h": "c",
-        "board.h": "c",
-        "module_blink.h": "c",
-        "stm32f1xx_hal.h": "c",
-        "stm32f1xx_hal_conf.h": "c",
-        "stm32f1xx_hal_def.h": "c",
-        "stm32f1xx.h": "c",
-        "stm32f1xx_hal_rcc.h": "c",
-        "pal_clock.h": "c",
-        "module_system.h": "c"
-    },
-    "cmake.cmakePath": "cube-cmake",
-    "cmake.configureArgs": [
-        "-DCMAKE_COMMAND=cube-cmake"
-    ],
-    "cmake.preferredGenerators": [
-        "Ninja"
-    ]
+    "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
+    "cortex-debug.gdbPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/arm-none-eabi-gdb"
 }
+  

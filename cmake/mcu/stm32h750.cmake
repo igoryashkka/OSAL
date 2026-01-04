@@ -38,11 +38,6 @@ target_link_options(platform_mcu INTERFACE
 target_compile_definitions(platform_mcu INTERFACE
   USE_HAL_DRIVER
   ${MCU_PART}
-  $<$<BOOL:${USE_GPIO}>:HAL_GPIO_MODULE_ENABLED>
-  $<$<BOOL:${USE_UART}>:HAL_UART_MODULE_ENABLED>
-  $<$<BOOL:${USE_I2C}>:HAL_I2C_MODULE_ENABLED>
-  $<$<BOOL:${USE_SPI}>:HAL_SPI_MODULE_ENABLED>
-  $<$<BOOL:${USE_FLASH}>:HAL_FLASH_MODULE_ENABLED>
 )
 
 target_include_directories(platform_mcu INTERFACE
@@ -50,6 +45,7 @@ target_include_directories(platform_mcu INTERFACE
   ${CMSIS_DIR}/Device/ST/STM32H7xx/Include
   ${CMSIS_DIR}/Include
   ${HAL_DIR}/Inc
+  ${CMAKE_SOURCE_DIR}/Platform_API
 )
 
 target_sources(platform_mcu INTERFACE
@@ -57,9 +53,12 @@ target_sources(platform_mcu INTERFACE
   ${CMSIS_DIR}/Device/ST/STM32H7xx/Source/Templates/system_stm32h7xx.c
   ${STM32_ROOT}/common/stm32h7xx_it.c
 
-  ${STM32_ROOT}/pal/stm32h7/pal_clock_stm32h7.c
-  ${STM32_ROOT}/pal/stm32h7/pal_gpio_stm32h7.c
-  ${STM32_ROOT}/pal/stm32h7/pal_uart_stm32h7.c
+  ${STM32_ROOT}/impl/stm32h7/platform_clock_stm32h7.c
+  ${STM32_ROOT}/impl/stm32h7/platform_gpio_stm32h7.c
+  ${STM32_ROOT}/impl/stm32h7/platform_uart_stm32h7.c
+
+  ${STM32_ROOT}/impl/stm32h7/platform_flash_stm32h7.c
+  ${STM32_ROOT}/impl/stm32h7/platform_delay_stm32h7.c
 
   ${HAL_DIR}/Src/stm32h7xx_hal.c
   ${HAL_DIR}/Src/stm32h7xx_hal_rcc.c

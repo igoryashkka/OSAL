@@ -2,7 +2,7 @@
 
 
 
-void pal_clock_init_default(void) 
+void RCC_InitDefault(void) 
 { 
 
   HAL_Init(); // NEED TO MOVE

@@ -1,15 +1,15 @@
-#include "pal_gpio.h"
+#include "Platform_GPIO/Platform_gpio.h"
 #include "module_blink.h"
 
 
 
 void blink_init(){
-  pal_gpio_init_led();
+  GPIO_InitLed();
 }
 
-void blink_once(void) {
-    pal_gpio_toggle_led();
-    pal_delay(5000000);
-    pal_gpio_toggle_led();
-    pal_delay(5000000);
+void blink_once(void){
+    GPIO_ToggleLed();
+    for(int i = 0 ; i < 5000000;i++);
+    GPIO_ToggleLed();
+    for(int i = 0 ; i < 5000000;i++);
 }

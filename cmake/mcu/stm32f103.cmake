@@ -24,29 +24,51 @@ set(MCU_FLAGS
   -mfloat-abi=soft
 )
 
+# -----------------------------
+# Compile flags (MUST include -g here!)
+# -----------------------------
 target_compile_options(platform_mcu INTERFACE
   ${MCU_FLAGS}
-  -ffunction-sections -fdata-sections
-  -Wall -Wextra -Werror=implicit-function-declaration
+
+  # Debug info (fix Unknown Source)
+  -g3
+  -Og
+  -fno-omit-frame-pointer
+  -fno-inline
+
+  -ffunction-sections
+  -fdata-sections
+
+  -Wall
+  -Wextra
+  -Werror=implicit-function-declaration
 )
 
+# -----------------------------
+# Link flags
+# -----------------------------
 target_link_options(platform_mcu INTERFACE
   ${MCU_FLAGS}
+
+  -g3
   -Wl,--gc-sections
   -Wl,-Map=${CMAKE_BINARY_DIR}/app.map
+  -Wl,--print-memory-usage
+
   -T ${LINKER_SCRIPT}
+
+  # Bare-metal syscalls stubs
   -specs=nosys.specs
-  -Wl,--start-group -lc -lm -lgcc -Wl,--end-group
+
+  # Standard libs (grouped)
+  -Wl,--start-group
+    -lc -lm -lgcc
+  -Wl,--end-group
 )
 
 target_compile_definitions(platform_mcu INTERFACE
   USE_HAL_DRIVER
   ${MCU_PART}
-  $<$<BOOL:${USE_GPIO}>:HAL_GPIO_MODULE_ENABLED>
-  $<$<BOOL:${USE_UART}>:HAL_UART_MODULE_ENABLED>
-  $<$<BOOL:${USE_I2C}>:HAL_I2C_MODULE_ENABLED>
-  $<$<BOOL:${USE_SPI}>:HAL_SPI_MODULE_ENABLED>
-  $<$<BOOL:${USE_FLASH}>:HAL_FLASH_MODULE_ENABLED>
 )
 
 target_include_directories(platform_mcu INTERFACE
@@ -54,17 +76,21 @@ target_include_directories(platform_mcu INTERFACE
   ${CMSIS_DIR}/Device/ST/STM32F1xx/Include
   ${CMSIS_DIR}/Include
   ${HAL_DIR}/Inc
+  ${HAL_DIR}
+  ${CMAKE_SOURCE_DIR}/Platform_API
 )
 
-# ---- Sources: startup + system + it + PAL + HAL ----
+# ---- Sources: startup + system + it + syscalls + PAL + HAL ----
 target_sources(platform_mcu INTERFACE
   ${STM32_ROOT}/startup/gcc/startup_stm32f103xb.s
   ${CMSIS_DIR}/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
   ${STM32_ROOT}/common/stm32f1xx_it.c
+  ${STM32_ROOT}/common/syscalls.c
 
-  ${STM32_ROOT}/pal/stm32f1/pal_clock_stm32f1.c
-  ${STM32_ROOT}/pal/stm32f1/pal_gpio_stm32f1.c
-  ${STM32_ROOT}/pal/stm32f1/pal_uart_stm32f1.c
+  ${STM32_ROOT}/impl/stm32f1/STM32F103x_Rcc_API.c
+  ${STM32_ROOT}/impl/stm32f1/STM32F103x_Gpio_API.c
+  ${STM32_ROOT}/impl/stm32f1/STM32F103x_Uart_API.c
+  ${STM32_ROOT}/impl/stm32f1/STM32F103x_Flash_API.c
 
   ${HAL_DIR}/Src/stm32f1xx_hal.c
   ${HAL_DIR}/Src/stm32f1xx_hal_rcc.c

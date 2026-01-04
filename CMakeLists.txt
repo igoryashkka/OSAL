@@ -34,6 +34,16 @@ endif()
 
 include("${MCU_CMAKE}")  # must define platform::mcu (INTERFACE library)
 
+# ---- Platform_API (weak default implementations) ------------------------
+add_library(platform_api STATIC
+  Platform_API/Platform_GPIO/Platform_gpio.c
+  Platform_API/Platform_Clock/Platform_clock.c
+  Platform_API/Platform_UART/Platform_uart.c
+  Platform_API/Platform_Flash/Platform_flash.c
+)
+target_include_directories(platform_api PUBLIC ${CMAKE_SOURCE_DIR}/Platform_API)
+
+
 # ---- App target ------------------------------------------------------------
 add_executable(app
   app/main.c
@@ -43,14 +53,14 @@ add_executable(app
 
 target_include_directories(app PRIVATE
   ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include/pal
+  ${CMAKE_SOURCE_DIR}/Platform_API
   ${CMAKE_SOURCE_DIR}/include/config
   ${CMAKE_SOURCE_DIR}/modules/blink
   ${CMAKE_SOURCE_DIR}/modules/system
 )
 
 # Link to the selected MCU platform (startup + HAL + flags + ld, all there)
-target_link_libraries(app PRIVATE platform::mcu)
+target_link_libraries(app PRIVATE platform_api platform::mcu)
 
 # ---- HEX/BIN/SIZE ----------------------------------------------------------
 add_custom_command(TARGET app POST_BUILD
