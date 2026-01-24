@@ -1,44 +1,48 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "STM32F103C8 (J-Link SWD)",
-        "type": "cortex-debug",
-        "request": "launch",
-        "servertype": "jlink",
-  
-        "cwd": "${workspaceFolder}",
-        "executable": "${workspaceFolder}/build_stm32f103/app",
-  
-        "device": "STM32F103C8",
-        "interface": "swd",
-        "speed": 4000,
-  
-        "gdbPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/arm-none-eabi-gdb",
-  
-        "runToEntryPoint": "main",
-        "breakAfterReset": true,
-  
-        "sourceFileMap": {
-          "/Users/igor404ik/Documents/OSAL/OSAL": "${workspaceFolder}"
-        },
-  
-        "showDevDebugOutput": "raw",
-  
-        "preLaunchCommands": [
-          "monitor reset",
-          "monitor halt"
-        ],
-        "postLaunchCommands": [
-          "break main",
-          "continue"
-        ],
-  
-        "postRestartCommands": [
-          "monitor reset",
-          "monitor halt"
-        ]
-      }
-    ]
-  }
-  
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "STM32F103C8 (J-Link SWD)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "jlink",
+
+      "cwd": "${workspaceFolder}",
+
+      "executable": "${workspaceFolder}/build_stm32f103/app",
+
+      "gdbPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/arm-none-eabi-gdb",
+
+      "device": "STM32F103C8",
+      "interface": "swd",
+
+      "serverpath": "/Applications/SEGGER/JLink/JLinkGDBServerCLExe",
+      "serverArgs": [
+        "-singlerun",
+        "-nogui",
+        "-if", "swd",
+        "-speed", "2000",
+        "-port", "50000",
+        "-swoport", "50001",
+        "-telnetport", "50002",
+        "-device", "STM32F103C8"
+      ],
+
+      "runToEntryPoint": "main",
+      "breakAfterReset": true,
+
+      "preLaunchCommands": [
+        "set substitute-path /Users/igor404ik/Documents/OSAL/OSAL ${workspaceFolder}",
+        "monitor reset",
+        "monitor halt"
+      ],
+
+      "postRestartCommands": [
+        "monitor reset",
+        "monitor halt"
+      ],
+
+      "showDevDebugOutput": "none" //#raw
+    }
+  ]
+}
