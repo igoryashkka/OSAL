@@ -16,13 +16,31 @@ BUILD_DIR="${ROOT_DIR}/build_${MCU}"
 TOOLCHAIN_FILE="${ROOT_DIR}/cmake/toolchains/arm-gcc.cmake"
 
 echo "============================================"
-echo " Building for MCU: ${MCU}"
+echo " OSAL Build System"
+echo " Target MCU: ${MCU}"
 echo " Root dir: ${ROOT_DIR}"
 echo " Build dir: ${BUILD_DIR}"
 echo "============================================"
+echo ""
 
+echo "[1/2] Configuring CMake..."
 cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" \
   -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
-  -DMCU="${MCU}"
+  -DMCU="${MCU}" \
+  -GNinja || {
+    echo "ERROR: CMake configuration failed"
+    exit 1
+  }
 
-cmake --build "${BUILD_DIR}" -j
+echo ""
+echo "[2/2] Building firmware..."
+cmake --build "${BUILD_DIR}" -j || {
+    echo "ERROR: Build failed"
+    exit 1
+  }
+
+echo ""
+echo "============================================"
+echo " Build Complete!"
+echo " Output: ${BUILD_DIR}/app.{elf,hex,bin}"
+echo "============================================"

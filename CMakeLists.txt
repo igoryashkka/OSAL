@@ -44,19 +44,36 @@ add_library(platform_api STATIC
 target_include_directories(platform_api PUBLIC ${CMAKE_SOURCE_DIR}/Platform_API)
 
 
-# ---- App target ------------------------------------------------------------
+# ---- App target (including all modules and tasks) ----------------------------
 add_executable(app
   app/main.c
+  app/init/application.c
+  app/tasks/tasks_peripheral.c
+  app/tasks/tasks_comms.c
+  app/tasks/tasks_stats.c
   modules/blink/module_blink.c
   modules/system/module_system.c
+  modules/scheduler/scheduler.c
+  modules/gps.nmea/gps_nmea.c
 )
 
 target_include_directories(app PRIVATE
+  ${CMAKE_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/app
+  ${CMAKE_SOURCE_DIR}/app/init
+  ${CMAKE_SOURCE_DIR}/app/tasks
+  ${CMAKE_SOURCE_DIR}/app/config
   ${CMAKE_SOURCE_DIR}/Platform_API
-  ${CMAKE_SOURCE_DIR}/include/config
+  ${CMAKE_SOURCE_DIR}/Platform_API/Platform_GPIO
+  ${CMAKE_SOURCE_DIR}/Platform_API/Platform_UART
+  ${CMAKE_SOURCE_DIR}/Platform_API/Platform_Clock
+  ${CMAKE_SOURCE_DIR}/Platform_API/Platform_Flash
   ${CMAKE_SOURCE_DIR}/modules/blink
   ${CMAKE_SOURCE_DIR}/modules/system
+  ${CMAKE_SOURCE_DIR}/modules/scheduler
+  ${CMAKE_SOURCE_DIR}/modules/gps.nmea
+  ${CMAKE_SOURCE_DIR}/modules/flash
 )
 
 # Link to the selected MCU platform (startup + HAL + flags + ld, all there)
