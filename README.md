@@ -1,60 +1,83 @@
-# STM32 HAL + CMake skeleton (STM32F103C8)
+# OSAL - Operating System Abstraction Layer for STM32
 
-This is a minimal, vendor-HAL-based project you can build with CMake + Ninja and `arm-none-eabi-gcc`.
+Multi-MCU embedded project with modular Platform API abstraction layer. Supports STM32F103 and STM32H750 with CMake + Ninja + arm-none-eabi-gcc.
 
-## Layout
+## Project Layout
 ```
-stm32_multi_skeleton/
+OSAL/
 ├─ CMakeLists.txt
-├─ cmake/toolchains/arm-gcc.cmake
-├─ app/main.c
-├─ modules/blink/blink.c
-├─ modules/blink/blink.h
-├─ include/pal/{pal_gpio.h,pal_uart.h,pal_flash.h,pal_clock.h}
-├─ include/config/board.h
-├─ include/stm32f1xx_hal_conf.h
-├─ platform/stm32/common/system_stm32f1xx.c
-├─ platform/stm32/startup/gcc/startup_stm32f103xb.s
-├─ platform/stm32/ld/stm32f103c8_flash.ld
-└─ platform/stm32/STM32F1XX/Drivers/   <-- put STM32CubeF1 Drivers here
+├─ app/main.c                                    # Application entry point
+├─ modules/                                      # Functional modules
+│  ├─ blink/module_blink.{c,h}
+│  ├─ system/module_system.{c,h}
+│  └─ flash/nvm_*.{c,h}                          # Non-volatile memory abstraction
+├─ Platform_API/                                 # HAL abstraction layer (weak defaults)
+│  ├─ Platform_Clock/Platform_clock.{c,h}
+│  ├─ Platform_GPIO/Platform_gpio.{c,h}
+│  ├─ Platform_UART/platform_uart.{c,h}
+│  └─ Platform_Flash/Platform_flash.{c,h}
+├─ platform/stm32/                              # MCU-specific implementations
+│  ├─ common/                                    # Shared code (syscalls, startup)
+│  ├─ impl/stm32f1/ & impl/stm32h7/             # MCU-specific drivers
+│  ├─ ld/stm32f103c8_flash.ld                   # Linker scripts
+│  ├─ startup/gcc/                              # Startup assembly
+│  └─ STM32F1XX/Drivers/                         # ST HAL (provided separately)
+└─ cmake/
+   ├─ mcu/stm32f103.cmake & stm32h750.cmake     # MCU configurations
+   └─ toolchains/arm-gcc.cmake                  # Cross-compile toolchain
 ```
 
-## Prereqs
+## Prerequisites
 - CMake ≥ 3.22
-- Ninja
-- ARM GCC toolchain in PATH (e.g. `arm-none-eabi-gcc`)
-- **STM32CubeF1** Drivers copied to `platform/stm32/STM32F1XX/Drivers/`
+- Ninja build system
+- ARM GCC toolchain (`arm-none-eabi-gcc`, `arm-none-eabi-objcopy`, `arm-none-eabi-size`)
+- STM32 HAL Drivers from ST CubeMX (for supported MCU)
 
-Expected subfolders you must provide from the ST package:
-- `CMSIS/Include`
-- `CMSIS/Device/ST/STM32F1xx/Include`
-- `STM32F1xx_HAL_Driver/Inc`
-- `STM32F1xx_HAL_Driver/Src`
+## Build Configuration
 
-## Configure & build (PowerShell)
-```powershell
-$tc = "$PWD\cmake\toolchains\arm-gcc.cmake"
-Remove-Item -Recurse -Force build -ErrorAction Ignore
-cmake -S . -B build -G "Ninja" `
-  -DCMAKE_TOOLCHAIN_FILE="$tc" `
-  -DMCU_PART=STM32F103xB `
-  -DLINKER_SCRIPT="$PWD\platform\stm32\ld\stm32f103c8_flash.ld" `
-  -DUSE_GPIO=ON -DUSE_UART=ON -DUSE_I2C=OFF -DUSE_SPI=OFF -DUSE_FLASH=ON `
-  -DCMAKE_OBJCOPY=arm-none-eabi-objcopy
+MCU selection via CMake cache variable:
+- `stm32f103` - STM32F103C8 (Blue Pill, default)
+- `stm32h750` - STM32H750VB (high-performance)
 
-cmake --build build -v
+Feature flags (all enabled by default):
+- `USE_GPIO`, `USE_UART`, `USE_FLASH`, `USE_I2C`, `USE_SPI`
+
+## Building (macOS/Linux)
+
+```bash
+# For STM32F103
+rm -rf build_stm32f103
+cmake -S . -B build_stm32f103 -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-gcc.cmake \
+  -DMCU=stm32f103
+cmake --build build_stm32f103 -v
+
+# For STM32H750
+rm -rf build_stm32h750
+cmake -S . -B build_stm32h750 -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-gcc.cmake \
+  -DMCU=stm32h750
+cmake --build build_stm32h750 -v
 ```
 
-## Configure & build (MacOS)
+Build artifacts: `app.elf`, `app.hex`, `app.bin`, `app.map`
 
-rm -rf build
-cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-gcc.cmake
-cmake --build build -v
+## Quick Build (macOS)
 
+```bash
+./tools/build.sh          # Build for STM32F103
+./tools/clean.sh          # Clean build directories
+```
 
-Artifacts: `build/app.elf`, `build/app.hex`, `build/app.bin`, and `build/app.map`.
+## Architecture Notes
 
-## Notes
-- Default LED: **PC13** (BluePill). Change `include/config/board.h` for your board.
-- UART default is USART1 on PA9/PA10 at 115200.
-- `system_stm32f1xx.c` is a minimal stub; for production use ST's official file.
+- **Platform_API**: Weak default implementations allow MCU-specific overrides
+- **Flash Module (NVM)**: Abstracted non-volatile memory with CRC32 support
+- **System Module**: Clock and initialization management per-MCU
+- **Blink Module**: LED control with GPIO abstraction
+
+## Configuration Files
+
+- Board-specific settings: Define in your application or cmake/mcu/*.cmake
+- STM32F1XX HAL config: Provide `stm32f1xx_hal_conf.h` in `include/`
+- Linker script: `platform/stm32/ld/stm32f103c8_flash.ld` (customizable)
