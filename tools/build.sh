@@ -4,7 +4,7 @@ set -e
 MCU="$1"
 if [ -z "$MCU" ]; then
   echo "ERROR: MCU not specified"
-  echo "Usage: ./tools/build.sh stm32h750 | stm32f103"
+  echo "Usage: ./tools/build.sh stm32h750 | stm32f103 | stm8l151"
   exit 1
 fi
 
@@ -14,6 +14,9 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 BUILD_DIR="${ROOT_DIR}/build_${MCU}"
 TOOLCHAIN_FILE="${ROOT_DIR}/cmake/toolchains/arm-gcc.cmake"
+if [ "${MCU}" = "stm8l151" ]; then
+  TOOLCHAIN_FILE="${ROOT_DIR}/cmake/toolchains/sdcc-stm8.cmake"
+fi
 
 echo "============================================"
 echo " OSAL Build System"

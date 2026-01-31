@@ -6,7 +6,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(stm32_multi LANGUAGES C ASM)
 
 # ---- User options ----------------------------------------------------------
-set(MCU "" CACHE STRING "Target MCU: stm32f103 or stm32h750")
+set(MCU "" CACHE STRING "Target MCU: stm32f103, stm32h750, or stm8l151")
 
 option(USE_GPIO  "Enable GPIO"  ON)
 option(USE_UART  "Enable UART"  ON)
@@ -17,7 +17,7 @@ option(USE_FLASH "Enable FLASH" ON)
 if(MCU STREQUAL "")
   message(FATAL_ERROR
     "MCU is not set.\n"
-    "Use: cmake -S . -B build -DMCU=stm32h750 (or stm32f103)\n"
+    "Use: cmake -S . -B build -DMCU=stm32h750 (or stm32f103/stm8l151)\n"
   )
 endif()
 
@@ -28,7 +28,7 @@ set(MCU_CMAKE "${CMAKE_SOURCE_DIR}/cmake/mcu/${MCU_LOWER}.cmake")
 if(NOT EXISTS "${MCU_CMAKE}")
   message(FATAL_ERROR
     "Unknown MCU='${MCU}'. Expected cmake/mcu/${MCU_LOWER}.cmake\n"
-    "Supported: stm32f103, stm32h750"
+    "Supported: stm32f103, stm32h750, stm8l151"
   )
 endif()
 
