@@ -45,10 +45,9 @@ typedef enum {
 
 /* Forward declaration */
 struct task_handle;
-typedef struct task_handle task_handle_t;
 
 /* Task function pointer - returns how long to wait before next run */
-typedef uint32_t (*task_func_t)(task_handle_t* task);
+typedef uint32_t (*task_func_t)(struct task_handle* task);
 
 /* Task statistics */
 typedef struct {
@@ -117,7 +116,7 @@ const char* SCHED_GetTaskStateStr(task_state_t state);
 uint32_t SCHED_GetTaskRunCount(task_handle_t* task);
 uint32_t SCHED_GetTaskLastRunTime(task_handle_t* task);
 uint32_t SCHED_GetTaskAverageRuntime(task_handle_t* task);
-task_stats_t SCHED_GetTaskStats(task_handle_t* task);
+//task_stats_t SCHED_GetTaskStats(task_handle_t* task);
 
 /* === Timing & Delays === */
 uint32_t SCHED_GetElapsedTime(task_handle_t* task);  /* ms since task created */
