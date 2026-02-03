@@ -37,13 +37,14 @@ OSAL/
 │   └── flash/                    # NVM/EEPROM operations
 │
 ├── platform/                     # Platform-specific implementations
-│   └── stm32/
-│       ├── common/               # Shared STM32 code
-│       ├── impl/
-│       │   ├── stm32f1/          # STM32F103 specific
-│       │   └── stm32h7/          # STM32H750 specific
-│       ├── ld/                   # Linker scripts
-│       └── startup/              # Startup code
+│   ├── stm32/
+│   │   ├── common/               # Shared STM32 code
+│   │   ├── impl/
+│   │   │   ├── stm32f1/          # STM32F103 specific
+│   │   │   └── stm32h7/          # STM32H750 specific
+│   │   ├── ld/                   # Linker scripts
+│   │   └── startup/              # Startup code
+│   └── stm8/                     # STM8L151 scaffold (startup/linker)
 │
 ├── cmake/                        # Build configuration
 │   ├── mcu/                      # MCU-specific CMake

@@ -1,0 +1,40 @@
+# STM8L151 SDCC linker script (sdldstm8)
+# Minimal map to get a firmware linked.
+#
+# Adjust FLASH/RAM sizes to your exact STM8L151 variant.
+
+# --- Memory placement (base addresses) ---
+# STM8 flash starts at 0x8000
+# STM8 RAM is typically in 0x0000.. range (direct page) and goes upward
+# We'll keep it simple:
+-b VECTORS = 0x8000
+-b HOME    = 0x8080
+-b CODE    = 0x8080
+-b CONST   = 0x8080
+
+# RAM start at 0x0000
+-b DATA    = 0x0000
+-b SSEG    = 0x0000
+
+# --- Sizes (IMPORTANT) ---
+# Example for a "medium" variant:
+#   FLASH: 0x8000..0xFFFF  => 32 KB
+#   RAM:   0x0000..0x07FF  => 2 KB
+#
+# If your chip has 16KB flash -> use -c CODE = 0x4000
+# If your chip has 64KB flash -> still ends at 0xFFFF but more mapped, usually ok.
+#
+# Let's assume 32KB flash + 2KB RAM as safe default:
+-c CODE = 0x7F80
+-c DATA = 0x0800
+
+# --- Stack ---
+# Put stack at top of RAM (end - 1). If RAM=0x0800 => top=0x07FF
+# SDCC linker uses -k for stack? Often for stm8 you set it via startup (LDW SP,#...).
+# We'll set it in startup, so no linker stack directive here.
+
+# --- Libraries ---
+# SDCC needs its runtime libs. Usually sdcc driver adds them, but sdld sometimes needs explicit:
+# If you get "undefined symbol" from libc, enable these lines.
+# -l stm8
+# -l c

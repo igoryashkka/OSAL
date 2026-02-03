@@ -1,6 +1,6 @@
 # OSAL - Operating System Abstraction Layer for STM32
 
-Multi-MCU embedded project with modular Platform API abstraction layer. Supports STM32F103 and STM32H750 with CMake + Ninja + arm-none-eabi-gcc.
+Multi-MCU embedded project with modular Platform API abstraction layer. Supports STM32F103, STM32H750, and a scaffold for STM8L151 with CMake + Ninja + arm-none-eabi-gcc (STM32) or SDCC (STM8).
 
 ## Project Layout
 ```
@@ -31,6 +31,7 @@ OSAL/
 - CMake ≥ 3.22
 - Ninja build system
 - ARM GCC toolchain (`arm-none-eabi-gcc`, `arm-none-eabi-objcopy`, `arm-none-eabi-size`)
+- SDCC toolchain for STM8 (`sdcc`, `sdobjcopy`, `sdsize`) when building STM8L151
 - STM32 HAL Drivers from ST CubeMX (for supported MCU)
 
 ## Build Configuration
@@ -38,6 +39,7 @@ OSAL/
 MCU selection via CMake cache variable:
 - `stm32f103` - STM32F103C8 (Blue Pill, default)
 - `stm32h750` - STM32H750VB (high-performance)
+- `stm8l151` - STM8L151 (requires SDCC and STM8L151 startup/linker files)
 
 Feature flags (all enabled by default):
 - `USE_GPIO`, `USE_UART`, `USE_FLASH`, `USE_I2C`, `USE_SPI`
@@ -58,6 +60,13 @@ cmake -S . -B build_stm32h750 -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/arm-gcc.cmake \
   -DMCU=stm32h750
 cmake --build build_stm32h750 -v
+
+# For STM8L151 (requires SDCC and platform/stm8 startup/linker files)
+rm -rf build_stm8l151
+cmake -S . -B build_stm8l151 -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/sdcc-stm8.cmake \
+  -DMCU=stm8l151
+cmake --build build_stm8l151 -v
 ```
 
 Build artifacts: `app.elf`, `app.hex`, `app.bin`, `app.map`
